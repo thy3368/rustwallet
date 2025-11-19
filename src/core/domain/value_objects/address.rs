@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use crate::DomainError;
 
 /// Ethereum address (42 characters, starts with 0x)
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -7,7 +8,7 @@ pub struct Address(String);
 
 impl Address {
     /// Create new address with validation
-    pub fn new(addr: String) -> Result<Self, crate::domain::errors::DomainError> {
+    pub fn new(addr: String) -> Result<Self, DomainError> {
         let instance = Self(addr);
         instance.validate()?;
         Ok(instance)
@@ -19,8 +20,7 @@ impl Address {
     }
 
     /// Validate Ethereum address format
-    pub fn validate(&self) -> Result<(), crate::domain::errors::DomainError> {
-        use crate::domain::errors::DomainError;
+    pub fn validate(&self) -> Result<(), DomainError> {
 
         if !self.0.starts_with("0x") {
             return Err(DomainError::InvalidAddressFormat);

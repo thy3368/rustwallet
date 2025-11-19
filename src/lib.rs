@@ -1,7 +1,7 @@
-pub mod application;
-pub mod domain;
 pub mod infrastructure;
 pub mod interfaces;
 
+pub mod core;
+
 // Re-export commonly used types
-pub use domain::{Address, Balance, DomainError, Network};
+pub use core::domain::{Address, Balance, DomainError, Network};

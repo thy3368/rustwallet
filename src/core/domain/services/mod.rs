@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use crate::domain::{
+use crate::core::domain::{
     errors::DomainError,
     queries::{BalanceQueryResult, GetBalanceQuery},
     value_objects::{Address, Balance},

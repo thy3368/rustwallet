@@ -1,14 +1,15 @@
 use clap::{Parser, Subcommand};
 use std::sync::Arc;
 use crate::{
-    application::GetBalanceHandler,
-    domain::{
+    core::application::GetBalanceHandler,
+    core::domain::{
         queries::GetBalanceQuery,
         services::QueryHandler,
         value_objects::{Address, Network},
     },
     infrastructure::AlloyBlockchainService,
 };
+use crate::core::domain::services::BlockchainService;
 
 #[derive(Parser)]
 #[command(name = "rustwallet")]
@@ -77,7 +78,7 @@ impl Cli {
         println!("   Network: {}", network);
 
         // Create blockchain service
-        let blockchain_service: Arc<dyn crate::domain::services::BlockchainService> = if let Some(rpc) = rpc_url {
+        let blockchain_service: Arc<dyn BlockchainService> = if let Some(rpc) = rpc_url {
             println!("   RPC URL: {}", rpc);
             Arc::new(AlloyBlockchainService::new(network.clone(), &rpc).await?)
         } else {

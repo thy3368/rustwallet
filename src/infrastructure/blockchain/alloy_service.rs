@@ -3,7 +3,7 @@ use alloy::{
     providers::{Provider, ProviderBuilder, RootProvider},
     transports::http::{Client, Http},
 };
-use crate::domain::{
+use crate::core::domain::{
     errors::DomainError,
     services::BlockchainService,
     value_objects::{Address, Balance, Network},

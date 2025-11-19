@@ -1,6 +1,6 @@
 use rustwallet::{
-    application::GetBalanceHandler,
-    domain::{
+    core::application::GetBalanceHandler,
+    core::domain::{
         queries::GetBalanceQuery,
         services::{BlockchainService, QueryHandler},
         value_objects::{Address, Network},
@@ -23,10 +23,11 @@ async fn test_get_balance_mainnet_integration() {
     let network = Network::Mainnet;
 
     // Create blockchain service
-    let blockchain_service: Arc<dyn BlockchainService> =
-        Arc::new(AlloyBlockchainService::new_with_default_rpc(network.clone())
+    let blockchain_service: Arc<dyn BlockchainService> = Arc::new(
+        AlloyBlockchainService::new_with_default_rpc(network.clone())
             .await
-            .expect("Failed to create blockchain service"));
+            .expect("Failed to create blockchain service"),
+    );
 
     // Create query handler
     let handler = GetBalanceHandler::new(blockchain_service.clone());
@@ -86,13 +87,17 @@ async fn test_query_multiple_addresses() {
     // Arrange: Well-known Ethereum addresses
     let addresses = vec![
         ("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "Vitalik"),
-        ("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "WETH Contract"),
+        (
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "WETH Contract",
+        ),
     ];
 
-    let blockchain_service: Arc<dyn BlockchainService> =
-        Arc::new(AlloyBlockchainService::new_with_default_rpc(Network::Mainnet)
+    let blockchain_service: Arc<dyn BlockchainService> = Arc::new(
+        AlloyBlockchainService::new_with_default_rpc(Network::Mainnet)
             .await
-            .expect("Failed to create service"));
+            .expect("Failed to create service"),
+    );
 
     let handler = GetBalanceHandler::new(blockchain_service);
 
@@ -117,15 +122,19 @@ async fn test_query_multiple_addresses() {
 async fn test_invalid_address_error() {
     // Arrange: Invalid addresses
     let invalid_addresses = vec![
-        "not_an_address",           // No 0x prefix
-        "0x123",                     // Too short
+        "not_an_address",                             // No 0x prefix
+        "0x123",                                      // Too short
         "0xZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", // Invalid hex
     ];
 
     // Act & Assert
     for invalid in invalid_addresses {
         let result = Address::new(invalid.to_string());
-        assert!(result.is_err(), "Should reject invalid address: {}", invalid);
+        assert!(
+            result.is_err(),
+            "Should reject invalid address: {}",
+            invalid
+        );
     }
 }
 
@@ -187,10 +196,11 @@ async fn test_query_performance() {
     let address = Address::new("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string())
         .expect("Valid address");
 
-    let blockchain_service: Arc<dyn BlockchainService> =
-        Arc::new(AlloyBlockchainService::new_with_default_rpc(Network::Mainnet)
+    let blockchain_service: Arc<dyn BlockchainService> = Arc::new(
+        AlloyBlockchainService::new_with_default_rpc(Network::Mainnet)
             .await
-            .expect("Failed to create service"));
+            .expect("Failed to create service"),
+    );
 
     let handler = GetBalanceHandler::new(blockchain_service);
 

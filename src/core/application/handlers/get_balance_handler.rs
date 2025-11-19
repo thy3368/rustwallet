@@ -1,10 +1,10 @@
-use async_trait::async_trait;
-use std::sync::Arc;
-use crate::domain::{
+use crate::core::domain::{
     errors::DomainError,
     queries::{BalanceQueryResult, GetBalanceQuery},
     services::{BlockchainService, GetBalanceQueryHandler, QueryHandler},
 };
+use async_trait::async_trait;
+use std::sync::Arc;
 
 /// Implementation of GetBalanceQueryHandler
 pub struct GetBalanceHandler {
@@ -14,9 +14,7 @@ pub struct GetBalanceHandler {
 impl GetBalanceHandler {
     /// Create new GetBalanceHandler with a blockchain service
     pub fn new(blockchain_service: Arc<dyn BlockchainService>) -> Self {
-        Self {
-            blockchain_service,
-        }
+        Self { blockchain_service }
     }
 }
 
@@ -55,7 +53,7 @@ impl GetBalanceQueryHandler for GetBalanceHandler {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::value_objects::{Address, Balance, Network};
+    use crate::core::domain::value_objects::{Address, Balance, Network};
 
     struct MockBlockchainService {
         balance: Balance,

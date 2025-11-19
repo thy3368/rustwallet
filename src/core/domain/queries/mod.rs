@@ -1,4 +1,4 @@
-use crate::domain::value_objects::{Address, Balance, Network};
+use crate::core::domain::value_objects::{Address, Balance, Network};
 use serde::{Deserialize, Serialize};
 
 /// Query to get balance of an Ethereum address
