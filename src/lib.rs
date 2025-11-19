@@ -1,6 +1,4 @@
-pub mod infrastructure;
-pub mod interfaces;
-
+pub mod adapter;
 pub mod core;
 
 // Re-export commonly used types

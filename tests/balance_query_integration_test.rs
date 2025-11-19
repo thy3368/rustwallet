@@ -5,9 +5,9 @@ use rustwallet::{
         services::{BlockchainService, QueryHandler},
         value_objects::{Address, Network},
     },
-    infrastructure::AlloyBlockchainService,
 };
 use std::sync::Arc;
+use rustwallet::adapter::infrastructure::AlloyBlockchainService;
 
 /// Integration test for querying balance on Ethereum mainnet
 ///

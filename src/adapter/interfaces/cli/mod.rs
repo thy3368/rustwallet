@@ -7,8 +7,8 @@ use crate::{
         services::QueryHandler,
         value_objects::{Address, Network},
     },
-    infrastructure::AlloyBlockchainService,
 };
+use crate::adapter::infrastructure::AlloyBlockchainService;
 use crate::core::domain::services::BlockchainService;
 
 #[derive(Parser)]

@@ -1,5 +1,5 @@
 use clap::Parser;
-use rustwallet::interfaces::Cli;
+use rustwallet::adapter::interfaces::Cli;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
