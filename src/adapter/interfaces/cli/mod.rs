@@ -27,7 +27,7 @@ pub enum Commands {
         #[arg(short, long)]
         address: String,
 
-        /// Network (mainnet, sepolia, goerli, holesky)
+        /// Network (mainnet, sepolia, goerli, holesky, bsc, bsc-testnet)
         #[arg(short, long, default_value = "sepolia")]
         network: String,
 
@@ -61,13 +61,15 @@ impl Cli {
 
         // Parse network
         let network = match network_str.to_lowercase().as_str() {
-            "mainnet" => Network::Mainnet,
+            "mainnet" | "eth" => Network::Mainnet,
             "sepolia" => Network::Sepolia,
             "goerli" => Network::Goerli,
             "holesky" => Network::Holesky,
+            "bsc" | "bsc-mainnet" => Network::BscMainnet,
+            "bsc-testnet" => Network::BscTestnet,
             _ => {
                 return Err(anyhow::anyhow!(
-                    "Unknown network: {}. Use mainnet, sepolia, goerli, or holesky",
+                    "Unknown network: {}. Use mainnet, sepolia, goerli, holesky, bsc, or bsc-testnet",
                     network_str
                 ));
             }

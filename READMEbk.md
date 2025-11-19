@@ -15,6 +15,10 @@
 - 获得钱包余额
 - 转帐
 
+
 ## 以太网
 
 - 分析钱包领域模型/Users/hongyaotang/src/rustwallet/design/design.md:实体用struct，服务签名用trait
+- 完成集成测试 bsc eth bitcoin 相互转账
+- 查bitcoin solana链的余额
+- 

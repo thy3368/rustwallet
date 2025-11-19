@@ -23,6 +23,27 @@ pub enum DomainError {
 
     #[error("Configuration error: {0}")]
     ConfigurationError(String),
+
+    #[error("Invalid transaction hash")]
+    InvalidTransactionHash,
+
+    #[error("Invalid transaction hash length - must be 66 characters")]
+    InvalidTransactionHashLength,
+
+    #[error("Invalid transaction hash characters - must be hexadecimal")]
+    InvalidTransactionHashCharacters,
+
+    #[error("Insufficient balance for transfer")]
+    InsufficientBalance,
+
+    #[error("Invalid amount - must be greater than zero")]
+    InvalidAmount,
+
+    #[error("Transfer failed: {0}")]
+    TransferFailed(String),
+
+    #[error("Invalid private key")]
+    InvalidPrivateKey,
 }
 
 /// Blockchain service errors
