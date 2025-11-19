@@ -3,13 +3,17 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ##
+
 用中文
+集成测试 都调用handler
 
 ## Project Overview
 
-Multi-chain cryptocurrency wallet built with Rust, following **Clean Architecture**, **CQRS**, and **Event Sourcing** patterns. Currently supports Ethereum (ETH) and Binance Smart Chain (BSC) networks using the Alloy SDK.
+Multi-chain cryptocurrency wallet built with Rust, following **Clean Architecture**, **CQRS**, and **Event Sourcing**
+patterns. Currently supports Ethereum (ETH) and Binance Smart Chain (BSC) networks using the Alloy SDK.
 
 **Key Features:**
+
 - Query wallet balances across multiple networks (Mainnet, Sepolia, Goerli, Holesky, BSC)
 - Transfer funds between addresses
 - Type-safe domain modeling with value objects
@@ -18,6 +22,7 @@ Multi-chain cryptocurrency wallet built with Rust, following **Clean Architectur
 ## Build and Development Commands
 
 ### Build
+
 ```bash
 # Development build
 cargo build
@@ -27,6 +32,7 @@ cargo build --release
 ```
 
 ### Run CLI
+
 ```bash
 # Query balance (default: Sepolia testnet)
 cargo run -- balance --address "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" --network mainnet
@@ -41,11 +47,13 @@ cargo run -- balance --address "0xYourAddress" --network mainnet --rpc-url "http
 ### Testing
 
 **Run all unit tests (no network required):**
+
 ```bash
 cargo test
 ```
 
 **Run specific integration test suite:**
+
 ```bash
 # Balance query integration tests
 cargo test --test balance_query_integration_test -- --ignored --nocapture
@@ -58,11 +66,13 @@ cargo test --test transfer_integration_test -- --ignored --nocapture
 ```
 
 **Run single integration test:**
+
 ```bash
 cargo test --test balance_query_integration_test test_get_balance_mainnet_integration -- --ignored --nocapture
 ```
 
 **Notes:**
+
 - Integration tests are marked with `#[ignore]` as they require network access
 - Use `--nocapture` to see println! output during tests
 - Use `--ignored` flag to run network-dependent tests
@@ -97,19 +107,23 @@ src/
 1. **Dependency Direction**: Outer layers depend on inner layers, never the reverse
 2. **Domain Purity**: `core/domain/` has ZERO external dependencies (no Alloy, no tokio traits)
 3. **Trait Boundaries**: Domain defines trait interfaces (`BlockchainService`), infrastructure provides implementations
-4. **Value Objects**: All domain primitives are wrapped in type-safe value objects (e.g., `Address`, `Balance`, `Network`)
+4. **Value Objects**: All domain primitives are wrapped in type-safe value objects (e.g., `Address`, `Balance`,
+   `Network`)
 
 ### Key Architectural Patterns
 
 **CQRS (Command Query Responsibility Segregation):**
+
 - Queries: `GetBalanceQuery` → `GetBalanceHandler` → `BalanceQueryResult`
 - Commands: `TransferCommand` → `TransferHandler` → `TransferResult`
 
 **Dependency Injection:**
+
 - Services are injected as `Arc<dyn Trait>` for runtime polymorphism
 - Example: `GetBalanceHandler::new(blockchain_service: Arc<dyn BlockchainService>)`
 
 **Value Objects:**
+
 - `Address`: Validates Ethereum address format (0x + 40 hex chars)
 - `Balance`: Wei-based balance with ETH conversion utilities
 - `Network`: Enum with chain IDs and default RPC URLs
@@ -121,6 +135,7 @@ src/
 ### Supported Networks
 
 The `Network` enum in `src/core/domain/value_objects/network.rs` supports:
+
 - **Ethereum**: Mainnet (chain 1), Sepolia (11155111), Goerli (5), Holesky (17000)
 - **BSC**: BscMainnet (56), BscTestnet (97)
 - **Custom**: Define custom networks with chain ID and RPC URL
@@ -146,6 +161,7 @@ Implementation: `AlloyBlockchainService` in `src/adapter/infrastructure/blockcha
 ### Error Handling
 
 Domain errors in `src/core/domain/errors/mod.rs`:
+
 - `InvalidAddress`: Malformed address format
 - `NetworkError`: RPC connection failures
 - `InsufficientBalance`: Not enough funds for transfer
@@ -155,6 +171,7 @@ Domain errors in `src/core/domain/errors/mod.rs`:
 ## Implementation Status
 
 **Completed Features:**
+
 - ✅ Balance query on ETH and BSC networks
 - ✅ Clean Architecture foundation
 - ✅ CQRS pattern implementation
@@ -163,11 +180,13 @@ Domain errors in `src/core/domain/errors/mod.rs`:
 - ✅ Transfer command structure (design complete)
 
 **In Progress:**
+
 - 🔨 Transfer functionality (domain layer complete, Alloy integration pending)
 - 🔨 Private key security and encryption
 - 🔨 Gas estimation and EIP-1559 support
 
 **Planned:**
+
 - 📋 Wallet creation
 - 📋 Event Sourcing implementation
 - 📋 Transaction history
@@ -178,6 +197,7 @@ Domain errors in `src/core/domain/errors/mod.rs`:
 ### Why Clean Architecture?
 
 This project prioritizes **testability** and **maintainability** over quick prototyping:
+
 - Domain logic can be tested without blockchain connections
 - Blockchain provider (Alloy) can be swapped without touching domain code
 - Business rules are isolated from infrastructure concerns
@@ -185,11 +205,13 @@ This project prioritizes **testability** and **maintainability** over quick prot
 ### Type Safety Philosophy
 
 Every primitive is wrapped in a value object:
+
 - Prevents mixing up addresses and transaction hashes
 - Validates data at construction time
 - Self-documenting function signatures
 
 Example:
+
 ```rust
 // ❌ Bad: Primitive obsession
 async fn transfer(from: String, to: String, amount: u128) -> Result<String, Error>
@@ -203,6 +225,7 @@ async fn transfer(from: &Address, to: &Address, amount: u128) -> Result<Transact
 This project follows low-latency standards defined in the global CLAUDE.md:
 
 **Rust Release Profile** (Cargo.toml):
+
 ```toml
 [profile.release]
 opt-level = 3           # Maximum optimization
@@ -212,6 +235,7 @@ panic = "abort"         # Smaller binaries, faster panics
 ```
 
 **Hot Path Optimizations:**
+
 - Value objects use `Copy` trait where possible to avoid allocations
 - `Arc<T>` for shared immutable data
 - Async I/O for blockchain operations (Tokio runtime)
@@ -219,6 +243,7 @@ panic = "abort"         # Smaller binaries, faster panics
 ## Testing Philosophy
 
 **Unit Tests**: In-module tests for value objects and domain logic
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -227,11 +252,13 @@ mod tests {
 ```
 
 **Integration Tests**: Network-dependent tests in `tests/` directory
+
 - Marked with `#[ignore]` to prevent CI failures
 - Use real blockchain RPC endpoints
 - Query well-known addresses (e.g., Vitalik's address for balance verification)
 
 **Test Coverage:**
+
 - Value object validation (address format, amount validation)
 - Network connectivity and block number retrieval
 - Balance query workflow (end-to-end)
@@ -257,6 +284,7 @@ mod tests {
 ### Working with Alloy
 
 The `AlloyBlockchainService` wraps Alloy SDK types:
+
 - `alloy::primitives::Address` ↔ domain `Address` (conversion at boundary)
 - `alloy::primitives::U256` ↔ domain `Balance` (u128 conversion)
 - Provider is created with `ProviderBuilder::new().on_http(rpc_url)`
@@ -266,12 +294,14 @@ The `AlloyBlockchainService` wraps Alloy SDK types:
 ## Security Notes
 
 **Private Key Handling (CRITICAL):**
+
 - Private keys are currently passed as strings for testing
 - Production implementation requires encrypted keystore
 - Never commit private keys to version control
 - Use environment variables for testing: `PRIVATE_KEY=0x...`
 
 **Transaction Validation:**
+
 - Balance checks before transfers (implemented)
 - Address validation at construction time
 - Private key verification matches sender address
@@ -286,11 +316,13 @@ The `AlloyBlockchainService` wraps Alloy SDK types:
 ## Dependencies
 
 **Core:**
+
 - `tokio`: Async runtime
 - `async-trait`: Async trait support
 - `alloy`: Ethereum/BSC SDK (version 0.6 with full features)
 
 **Utilities:**
+
 - `serde`, `serde_json`: Serialization
 - `thiserror`, `anyhow`: Error handling
 - `clap`: CLI argument parsing
