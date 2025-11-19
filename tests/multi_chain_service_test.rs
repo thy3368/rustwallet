@@ -17,32 +17,131 @@ use std::sync::Arc;
 // ============================================================================
 
 #[tokio::test]
-//同时查 eth,bitcoin,solana中的余额
+#[ignore] // 同时查 eth,bitcoin,solana中的余额 - 需要网络连接
 async fn test_multi_chain_service_basic_usage() {
-    println!("\n🌐 Multi-Chain Service Basic Usage Test\n");
+    println!("\n🌐 Multi-Chain Service - 同时查询 ETH/Bitcoin/Solana 余额\n");
 
-    // Step 1: Create Infrastructure layer service
-    let service = MultiChainBlockchainService::new_for_network(Network::Sepolia)
+    // Step 1: Create Infrastructure layer service - 初始化所有链
+    println!("Step 1: Creating MultiChainBlockchainService for all chains...");
+    let mut service = MultiChainBlockchainService::new()
         .await
         .expect("Failed to create service");
 
-    println!("✓ Created MultiChainBlockchainService for Sepolia");
+    service.initialize_all().await.expect("Failed to initialize all chains");
+    let service_arc = Arc::new(service);
 
-    // Step 2: Create Application layer Handler
-    let _handler = GetBalanceHandler::new(Arc::new(service));
+    println!("✓ Initialized services for ETH, Bitcoin, and Solana");
+
+    // Step 2: Create Application layer Handler - 创建 Handler
+    println!("\nStep 2: Creating GetBalanceHandler...");
+    let handler = GetBalanceHandler::new(service_arc.clone());
+    let handler_arc = Arc::new(handler);
 
     println!("✓ Created GetBalanceHandler");
 
-    // Step 3: Create Domain layer Query
-    let address = Address::new("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEbC".to_string())
-        .expect("Valid address");
-    let query = GetBalanceQuery::new(address, Network::Sepolia);
+    // Step 3: Create Domain layer Queries - 为三条链创建查询
+    println!("\nStep 3: Creating queries for all three chains...");
 
-    println!("✓ Created GetBalanceQuery");
-    println!("  Chain Type: {}", query.chain_type);
-    println!("  Network:    {}", query.network);
+    // Ethereum 查询
+    let eth_address = Address::new("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEbC".to_string())
+        .expect("Valid ETH address");
+    let eth_query = GetBalanceQuery::new(eth_address.clone(), Network::Sepolia);
+    println!("✓ Created Ethereum query:");
+    println!("  Address:    {}", eth_query.address);
+    println!("  Network:    {}", eth_query.network);
+    println!("  Chain Type: {}", eth_query.chain_type);
 
-    println!("\n✅ Basic Usage Test PASSED");
+    // Bitcoin 查询
+    let btc_address = Address::new("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa".to_string())
+        .expect("Valid BTC address");
+    let btc_query = GetBalanceQuery::new(btc_address.clone(), Network::BitcoinMainnet);
+    println!("\n✓ Created Bitcoin query:");
+    println!("  Address:    {}", btc_query.address);
+    println!("  Network:    {}", btc_query.network);
+    println!("  Chain Type: {}", btc_query.chain_type);
+
+    // Solana 查询
+    let sol_address = Address::new("DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21hy".to_string())
+        .expect("Valid SOL address");
+    let sol_query = GetBalanceQuery::new(sol_address.clone(), Network::SolanaMainnet);
+    println!("\n✓ Created Solana query:");
+    println!("  Address:    {}", sol_query.address);
+    println!("  Network:    {}", sol_query.network);
+    println!("  Chain Type: {}", sol_query.chain_type);
+
+    // Step 4: Execute queries concurrently - 并发执行查询
+    println!("\nStep 4: Executing all queries concurrently...");
+    let start = std::time::Instant::now();
+
+    let (eth_result, btc_result, sol_result) = tokio::join!(
+        handler_arc.handle(eth_query),
+        handler_arc.handle(btc_query),
+        handler_arc.handle(sol_query)
+    );
+
+    let duration = start.elapsed();
+
+    // 显示结果
+    println!("\n═══════════════════════════════════════");
+    println!("📊 Query Results (Total time: {:?})", duration);
+    println!("═══════════════════════════════════════");
+
+    // Ethereum 结果
+    match eth_result {
+        Ok(result) => {
+            println!("\n🔷 Ethereum Sepolia:");
+            println!("  ✅ Success");
+            println!("  Address:  {}", result.address);
+            println!("  Balance:  {} Wei", result.balance.to_wei());
+            println!("  Balance:  {} ETH", result.balance.to_ether());
+            println!("  Chain:    {}", result.chain_type);
+        }
+        Err(e) => {
+            println!("\n🔷 Ethereum Sepolia:");
+            println!("  ⚠️  Error: {}", e);
+        }
+    }
+
+    // Bitcoin 结果
+    match btc_result {
+        Ok(result) => {
+            println!("\n🟠 Bitcoin Mainnet:");
+            println!("  ✅ Success");
+            println!("  Address:  {} (Satoshi's address)", result.address);
+            println!("  Balance:  {} satoshis", result.balance.to_wei());
+            println!("  Balance:  {} BTC", result.balance.to_wei() as f64 / 100_000_000.0);
+            println!("  Chain:    {}", result.chain_type);
+        }
+        Err(e) => {
+            println!("\n🟠 Bitcoin Mainnet:");
+            println!("  ⚠️  Error: {}", e);
+        }
+    }
+
+    // Solana 结果
+    match sol_result {
+        Ok(result) => {
+            println!("\n🟣 Solana Mainnet:");
+            println!("  ✅ Success");
+            println!("  Address:  {}", result.address);
+            println!("  Balance:  {} lamports", result.balance.to_wei());
+            println!("  Balance:  {} SOL", result.balance.to_wei() as f64 / 1_000_000_000.0);
+            println!("  Chain:    {}", result.chain_type);
+        }
+        Err(e) => {
+            println!("\n🟣 Solana Mainnet:");
+            println!("  ⚠️  Error: {}", e);
+        }
+    }
+
+    println!("\n═══════════════════════════════════════");
+    println!("✅ Multi-Chain Concurrent Query Test COMPLETED");
+    println!("\n💡 Key Features Demonstrated:");
+    println!("  1. 一个 MultiChainBlockchainService 支持所有链");
+    println!("  2. 一个 Handler 处理所有链的查询");
+    println!("  3. 使用 tokio::join! 并发查询，提高性能");
+    println!("  4. 统一的 Query 和 Result 接口");
+    println!("  5. ChainType 自动从 Network 推导");
 }
 
 #[tokio::test]
