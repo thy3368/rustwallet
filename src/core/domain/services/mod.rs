@@ -5,12 +5,20 @@ use crate::core::domain::{
     value_objects::{Address, Balance, TransactionHash},
 };
 
-/// Query handler trait - processes read operations
+/// Query handler trait - processes read operations (CQRS Query)
 #[async_trait]
 pub trait QueryHandler<Q>: Send + Sync {
     type Output;
 
     async fn handle(&self, query: Q) -> Result<Self::Output, DomainError>;
+}
+
+/// Command handler trait - processes write operations (CQRS Command)
+#[async_trait]
+pub trait CommandHandler<C>: Send + Sync {
+    type Output;
+
+    async fn handle(&self, command: C) -> Result<Self::Output, DomainError>;
 }
 
 /// Blockchain service interface for Ethereum/BSC operations
@@ -35,6 +43,10 @@ pub trait BlockchainService: Send + Sync {
     async fn get_block_number(&self) -> Result<u64, DomainError>;
 }
 
-/// Get balance query handler
+/// Get balance query handler (Query side of CQRS)
 #[async_trait]
 pub trait GetBalanceQueryHandler: QueryHandler<GetBalanceQuery, Output = BalanceQueryResult> {}
+
+/// Transfer command handler trait (Command side of CQRS)
+#[async_trait]
+pub trait TransferCommandHandler: CommandHandler<crate::core::domain::commands::TransferCommand, Output = crate::core::domain::commands::TransferResult> {}
