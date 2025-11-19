@@ -17,6 +17,7 @@ use std::sync::Arc;
 // ============================================================================
 
 #[tokio::test]
+//同时查 eth,bitcoin,solana中的余额
 async fn test_multi_chain_service_basic_usage() {
     println!("\n🌐 Multi-Chain Service Basic Usage Test\n");
 
